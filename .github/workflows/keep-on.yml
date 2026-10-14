@@ -21,7 +21,7 @@ jobs:
           s = Studio(name="thirsty-dijkstra-853", teamspace="general", org="kasumigyoububusiness-org", create_ok=False)
           print("status:", s.status)
           if "running" not in str(s.status).lower():
-              s.start(Machine.CPU)
+              s.start()
               print("started ->", s.status)
           PY
       # Scheduled workflows are disabled after 60 days without commits; touch a file monthly.
