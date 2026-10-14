@@ -1,0 +1,34 @@
+name: keep-studio-on
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  keepalive:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Start Lightning Studio if stopped
+        env:
+          LIGHTNING_USER_ID: ${{ secrets.LIGHTNING_USER_ID }}
+          LIGHTNING_API_KEY: ${{ secrets.LIGHTNING_API_KEY }}
+        run: |
+          pip install -q lightning-sdk
+          python - <<'PY'
+          from lightning_sdk import Studio, Machine
+          s = Studio(name="thirsty-dijkstra-853", teamspace="general", org="kasumigyoububusiness-org", create_ok=False)
+          print("status:", s.status)
+          if "running" not in str(s.status).lower():
+              s.start(Machine.CPU)
+              print("started ->", s.status)
+          PY
+      # Scheduled workflows are disabled after 60 days without commits; touch a file monthly.
+      - name: Monthly heartbeat commit
+        if: github.event_name == 'schedule'
+        run: |
+          [ "$(date -u +%d%H)" = "0100" ] && [ "$(date -u +%M)" -lt 5 ] || exit 0
+          git clone -q "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" r && cd r
+          date -u > heartbeat && git add heartbeat
+          git -c user.name=keepalive -c user.email=keepalive@users.noreply.github.com commit -qm heartbeat && git push -q
