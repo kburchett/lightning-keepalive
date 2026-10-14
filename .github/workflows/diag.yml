@@ -1,0 +1,27 @@
+name: diag
+on: workflow_dispatch
+jobs:
+  diag:
+    runs-on: ubuntu-latest
+    steps:
+      - env:
+          LIGHTNING_USER_ID: ${{ secrets.LIGHTNING_USER_ID }}
+          LIGHTNING_API_KEY: ${{ secrets.LIGHTNING_API_KEY }}
+        run: |
+          pip install -q lightning-sdk
+          python - <<'PY'
+          import json
+          from lightning_sdk import Teamspace, User, Studio
+          t = Teamspace(name="general", org="kasumigyoububusiness-org")
+          for a in dir(t):
+              if any(k in a.lower() for k in ("balance","credit","quota")):
+                  try: print("teamspace", a, getattr(t, a))
+                  except Exception as e: print("teamspace", a, "ERR", e)
+          u = User()
+          for a in dir(u):
+              if any(k in a.lower() for k in ("balance","credit","verif","phone","tier","plan")):
+                  try: print("user", a, getattr(u, a))
+                  except Exception as e: print("user", a, "ERR", e)
+          s = Studio(name="thirsty-dijkstra-853", teamspace="general", org="kasumigyoububusiness-org", create_ok=False)
+          print("studio", s.status, s.machine)
+          PY
