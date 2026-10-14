@@ -13,11 +13,12 @@ jobs:
           import json
           from lightning_sdk import Teamspace, User, Studio
           t = Teamspace(name="general", org="kasumigyoububusiness-org")
+          print("teamspace attrs", [a for a in dir(t) if not a.startswith("_")])
           for a in dir(t):
               if any(k in a.lower() for k in ("balance","credit","quota")):
                   try: print("teamspace", a, getattr(t, a))
                   except Exception as e: print("teamspace", a, "ERR", e)
-          u = User()
+          u = User(name="kasumigyoububusiness")
           for a in dir(u):
               if any(k in a.lower() for k in ("balance","credit","verif","phone","tier","plan")):
                   try: print("user", a, getattr(u, a))
